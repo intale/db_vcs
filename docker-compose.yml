@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      - PGUSER=${PGUSER}
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - pg_db:/var/lib/postgresql/data
+    ports:
+      - ${PG_PORT}:5432
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - mongo_db:/data/db
+    ports:
+      - ${MONGO_PORT}:27017
+
+volumes:
+  mongo_db:
+  pg_db:

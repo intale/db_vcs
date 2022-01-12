@@ -4,14 +4,13 @@ module DbVcs
   module Adapters
     class Postgres
       class Config
-        attr_accessor :host, :port, :username, :password, :psql_path
+        attr_accessor :host, :port, :username, :password
 
         def initialize
           @host = "localhost"
           @port = "5432"
           @username = "postgres"
           @password = nil
-          @psql_path = Utils.resolve_exec_path("psql")
         end
       end
 
@@ -33,14 +32,14 @@ module DbVcs
         # @param db_name [String]
         # @return [Boolean]
         def db_exists?(db_name)
-          !connection.exec("SELECT 1 AS one FROM pg_database WHERE datname='#{db_name}'").first.nil?
+          !connection.exec("SELECT 1 AS one FROM pg_database WHERE datname='#{db_name}' LIMIT 1").first.nil?
         end
 
         # @param to_db [String]
         # @param from_db [String]
         # @return void
         def copy_database(to_db, from_db)
-          connection.exec("CREATE DATABASE #{to_db} TEMPLATE #{from_db} OWNER hitleap")
+          connection.exec("CREATE DATABASE #{to_db} TEMPLATE #{from_db} OWNER #{config.username}")
         end
 
         # @return [Array<String>]

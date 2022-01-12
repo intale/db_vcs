@@ -3,13 +3,17 @@
 
 require "bundler/setup"
 require "db_vcs"
+require "dotenv/load"
+require_relative "../spec/support/pre_create_db"
 
-# You can add fixtures and/or initialization code here to make experimenting
-# with your gem easier. You can also use a different console, if you like.
+DbVcs.configure do |c|
+  c.pg_config.username = ENV["PGUSER"]
+  c.pg_config.port = ENV["PG_PORT"]
+  c.mongo_config.mongo_uri = "mongodb://localhost:#{ENV["MONGO_PORT"]}"
+end
 
-# (If you use this, don't forget to add pry to your Gemfile!)
-# require "pry"
-# Pry.start
+PreCreateDb.pre_create_mongo
+PreCreateDb.pre_create_pg
 
 require "irb"
 IRB.start(__FILE__)
