@@ -50,7 +50,7 @@ module DbVcs
         # @param db_name [String]
         # @return [void]
         def drop_by_dbname(db_name)
-          connection.exec("DROP DATABASE #{db_name}")
+          connection.exec("DROP DATABASE IF EXISTS #{db_name}")
         end
       end
     end

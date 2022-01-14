@@ -11,6 +11,19 @@ module DbVcs
       def get_adapter_by_name(adapter_name)
         ADAPTERS[adapter_name] || raise(NotImplementedError, "No adapter for `#{adapter_name}' is implemented.")
       end
+
+      # Creates databases for target branch from source branch for all setup environments for all setup databases
+      # @param :target [String] target branch name
+      # @param :source [String] a branch name to copy the db from
+      # @return [void]
+      def copy_for_all_envs(target:, source: "main")
+        DbVcs.config.dbs_in_use.each do |adapter_name|
+          inst = new(adapter_name)
+          DbVcs.config.environments.each do |env|
+            inst.copy(target: DbVcs::Utils.db_name(env, target), source: DbVcs::Utils.db_name(env, source))
+          end
+        end
+      end
     end
 
     attr_reader :adapter, :adapter_name
@@ -21,21 +34,18 @@ module DbVcs
       @adapter = self.class.get_adapter_by_name(adapter_name)
     end
 
-    # @param :branch [String] target branch name
-    # @param :source_branch [String] a branch name to copy the db from
+    # @param :target [String] new database name
+    # @param :source [String] database name to create a new db from
     # @return [void]
-    def copy_for_all_envs(branch:, source_branch: "master")
-      DbVcs.config.environments.each do |environment|
-        copy_for_env(branch: branch, source_branch: source_branch, env: environment)
+    def copy(target:, source:)
+      unless adapter.db_exists?(source)
+        return failure "#{source}' doesn't exist"
       end
-    end
-
-    # @param :branch [String] target branch name
-    # @param :source_branch [String] a branch name to copy the db from
-    # @param :env [String]
-    # @return [void]
-    def copy_for_env(branch:, source_branch:, env:)
-      copy_for(Utils.db_name(env, branch), Utils.db_name(env, source_branch))
+      if adapter.db_exists?(target)
+        return failure "#{target} already exists"
+      end
+      success "Copying #{source} -> #{target}"
+      adapter.copy_database(target, source)
     end
 
     # @param db_name [String]
@@ -67,22 +77,6 @@ module DbVcs
     # @return void
     def regular(text)
       puts message(text)
-    end
-
-    private
-
-    # @param to_db [String]
-    # @param from_db [String]
-    # @return [void]
-    def copy_for(to_db, from_db)
-      unless adapter.db_exists?(from_db)
-        return failure "#{from_db}' doesn't exist"
-      end
-      if adapter.db_exists?(to_db)
-        return failure "#{to_db} already exists"
-      end
-      success "Copying #{from_db} -> #{to_db}"
-      adapter.copy_database(to_db, from_db)
     end
   end
 end
