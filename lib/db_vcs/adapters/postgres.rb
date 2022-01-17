@@ -15,6 +15,8 @@ module DbVcs
       end
 
       class << self
+        include DbVcs::AdapterInterface
+
         # @return [DbVcs::Adapters::Postgres::Config]
         def config
           DbVcs.config.pg_config

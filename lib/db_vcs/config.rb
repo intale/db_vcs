@@ -6,8 +6,8 @@ module DbVcs
     attr_accessor :environments
     # This name will be used as a prefix to all copies of master database. Defaults to the name of current folder.
     attr_accessor :db_basename
-    # A list of databases you want to enable versioning. See {DbVcs::Manager::ADAPTERS} keys for the list of available
-    # values. Defaults to empty array.
+    # A list of databases you want to enable versioning for. See {DbVcs::Manager::ADAPTERS} keys for the list of
+    # available values. Defaults to empty array.
     attr_accessor :dbs_in_use
     # Configuration of dbs clients
     attr_reader :pg_config, :mongo_config

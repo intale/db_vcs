@@ -4,7 +4,13 @@ module DbVcs
   module Adapters
     class Mongo
       class Config
-        attr_accessor :mongodump_path, :mongorestore_path, :mongo_uri
+        # Path to mongodump util. It is resolved automatically.
+        attr_accessor :mongodump_path
+        # Path to mongorestore util. It is resolved automatically.
+        attr_accessor :mongorestore_path
+        # Mongodb connection uri. Defaults to "mongodb://localhost:27017".
+        # See https://docs.mongodb.com/manual/reference/connection-string/ for more info.
+        attr_accessor :mongo_uri
 
         def initialize
           @mongodump_path = Utils.resolve_exec_path("mongodump")
@@ -14,6 +20,8 @@ module DbVcs
       end
 
       class << self
+        include DbVcs::AdapterInterface
+
         # @return [DbVcs::Adapters::Mongo::Config]
         def config
           DbVcs.config.mongo_config

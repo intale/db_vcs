@@ -2,6 +2,7 @@
 
 require "json"
 require_relative "db_vcs/config"
+require_relative "db_vcs/adapter_interface"
 require_relative "db_vcs/adapters/mongo"
 require_relative "db_vcs/adapters/postgres"
 require_relative "db_vcs/utils"

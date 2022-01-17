@@ -18,14 +18,16 @@ module DbVcs
       # @param branch [String]
       # @return [String]
       def db_name(environment, branch)
-        "#{DbVcs.config.db_basename}_#{environment}_#{normalized_branch_name(branch)}"
+        [DbVcs.config.db_basename, environment, branch].map do |str|
+          normalize_db_part(str)
+        end.join("_")
       end
 
-      # Removes special characters from branch name
-      # @param branch [String] a name of a branch
+      # Removes special characters from string that is used as a part of database name
+      # @param str [String]
       # @return [String]
-      def normalized_branch_name(branch)
-        branch.gsub(/[\W]/, '_')
+      def normalize_db_part(str)
+        str.gsub(/[\W]/, "_")
       end
 
       # @param exec [String] a name of executable
@@ -34,6 +36,7 @@ module DbVcs
       def resolve_exec_path(exec, fallback_exec: nil)
         path = `which #{exec}`.chomp
         return resolve_exec_path(fallback_exec) if fallback_exec && path.empty?
+
         path.empty? ? exec : path
       end
     end

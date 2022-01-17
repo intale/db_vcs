@@ -19,6 +19,22 @@ RSpec.describe DbVcs::Config do
     it { expect { subject }.to change { instance.environments }.to(envs_list) }
   end
 
+  describe "#dbs_in_use" do
+    subject { instance.dbs_in_use }
+
+    it "has default value" do
+      is_expected.to eq([])
+    end
+  end
+
+  describe "#dbs_in_use=" do
+    subject { instance.dbs_in_use = dbs_in_use }
+
+    let(:dbs_in_use) { ["mongo", "postgres"] }
+
+    it { expect { subject }.to change { instance.dbs_in_use }.to(dbs_in_use) }
+  end
+
   describe "#db_basename" do
     subject { instance.db_basename }
 

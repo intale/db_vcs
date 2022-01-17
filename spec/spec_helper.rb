@@ -53,9 +53,9 @@ RSpec.configure do |config|
   config.after do
     DbVcs::Manager::ADAPTERS.keys.each do |adapter_name|
       adapter = DbVcs::Manager.get_adapter_by_name(adapter_name)
-      adapter.list_databases.select { |db_name| db_name.include?(DbVcs.config.db_basename) }.each do |db_name|
-        adapter.drop_by_dbname(db_name)
-      end
+      adapter.list_databases
+             .select { |db_name| db_name.include?(DbVcs::Utils.normalize_db_part(DbVcs.config.db_basename)) }
+             .each { |db_name| adapter.drop_by_dbname(db_name) }
     end
   end
 end
