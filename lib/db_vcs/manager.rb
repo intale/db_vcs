@@ -16,11 +16,22 @@ module DbVcs
       # @param :target [String] target branch name
       # @param :source [String] a branch name to copy the db from
       # @return [void]
-      def copy_for_all_envs(target:, source: "main")
+      def copy_for_all_envs(target:, source: DbVcs.config.main_branch)
         DbVcs.config.dbs_in_use.each do |adapter_name|
           inst = new(adapter_name)
           DbVcs.config.environments.each do |env|
             inst.copy(target: DbVcs::Utils.db_name(env, target), source: DbVcs::Utils.db_name(env, source))
+          end
+        end
+      end
+
+      # Drops databases of given branch name for all environments for all setup databases
+      # @param branch_name [String]
+      def drop_for_all_envs(branch_name)
+        DbVcs.config.dbs_in_use.each do |adapter_name|
+          inst = new(adapter_name)
+          DbVcs.config.environments.each do |env|
+            inst.drop(DbVcs::Utils.db_name(env, branch_name))
           end
         end
       end
@@ -51,8 +62,21 @@ module DbVcs
     # @param db_name [String]
     # @return [void]
     def drop(db_name)
+      unless adapter.db_exists?(db_name)
+        return failure "#{db_name}' doesn't exist"
+      end
       adapter.drop_by_dbname(db_name)
-      success "database #{db_name} was dropped successfully"
+      success "Database #{db_name} was dropped successfully"
+    end
+
+    # @param db_name [String]
+    # @return [void]
+    def create(db_name)
+      if adapter.db_exists?(db_name)
+        return failure "#{db_name}' already exist"
+      end
+      adapter.create_database(db_name)
+      success "Database #{db_name} created successfully"
     end
 
     # @param text [String, nil]

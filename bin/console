@@ -1,21 +1,11 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-ENV["APP_ENV"] ||= "development"
-
 require "bundler/setup"
-require "db_vcs"
-require "dotenv/load"
+require "db_vcs/autoconfigure"
 require_relative "../spec/support/db_helper"
 
-DbVcs.configure do |c|
-  c.dbs_in_use = DbVcs::Manager::ADAPTERS.keys
-  c.pg_config.username = ENV["PGUSER"]
-  c.pg_config.port = ENV["PG_PORT"]
-  c.mongo_config.mongo_uri = "mongodb://localhost:#{ENV["MONGO_PORT"]}"
-end
-
-DbHelper.pre_create_all(ENV["APP_ENV"], DbVcs::Utils.current_branch)
+DbHelper.pre_create_all("development", DbVcs::Utils.current_branch)
 
 require "irb"
 IRB.start(__FILE__)

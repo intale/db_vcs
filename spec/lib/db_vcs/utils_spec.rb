@@ -13,7 +13,7 @@ RSpec.describe DbVcs::Utils do
     subject { described_class.git_branches }
 
     it "returns a list of local branches" do
-      is_expected.to include("main")
+      is_expected.to include(DbVcs.config.main_branch)
     end
   end
 

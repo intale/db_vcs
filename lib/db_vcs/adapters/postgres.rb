@@ -4,6 +4,8 @@ module DbVcs
   module Adapters
     class Postgres
       class Config
+        include DbVcs::ConfigAttributes
+
         attr_accessor :host, :port, :username, :password
 
         def initialize
@@ -42,6 +44,12 @@ module DbVcs
         # @return void
         def copy_database(to_db, from_db)
           connection.exec("CREATE DATABASE #{to_db} TEMPLATE #{from_db} OWNER #{config.username}")
+        end
+
+        # @param db_name [String]
+        # @return void
+        def create_database(db_name)
+          connection.exec("CREATE DATABASE #{db_name} OWNER #{config.username}")
         end
 
         # @return [Array<String>]

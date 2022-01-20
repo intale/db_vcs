@@ -1,0 +1,9 @@
+pg_config:
+  username: postgres
+  port: 5532
+mongo_config:
+  mongo_uri: "mongodb://localhost:28017"
+dbs_in_use:
+  <% DbVcs::Manager::ADAPTERS.keys.each do |adapter_name| %>
+  - <%= adapter_name %>
+  <% end %>

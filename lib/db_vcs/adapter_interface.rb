@@ -18,6 +18,10 @@ module DbVcs
       raise NotImplementedError, "You have to implement this method in adapter's class"
     end
 
+    def create_database(db_name)
+      raise NotImplementedError, "You have to implement this method in adapter's class"
+    end
+
     def list_databases
       raise NotImplementedError, "You have to implement this method in adapter's class"
     end

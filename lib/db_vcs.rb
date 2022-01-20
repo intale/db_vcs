@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require "json"
+require "yaml"
+require "erb"
+require_relative "db_vcs/config_attributes"
 require_relative "db_vcs/config"
 require_relative "db_vcs/adapter_interface"
 require_relative "db_vcs/adapters/mongo"
@@ -15,11 +18,18 @@ module DbVcs
   class << self
     # @return [DbVcs::Config]
     def config
-      @config ||= Config.new
+      @config ||= DbVcs::Config.new
     end
 
     def configure
       yield config
+    end
+
+    def load_config
+      config_path = File.join(Dir.pwd, ".db_vcs.yml")
+      if File.exists?(config_path)
+        config.assign_attributes(YAML.load(ERB.new(File.read(config_path)).result))
+      end
     end
   end
 end

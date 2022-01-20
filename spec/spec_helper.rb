@@ -1,18 +1,13 @@
 # frozen_string_literal: true
 
-ENV["APP_ENV"] ||= "test"
-
 require "rspec/its"
-require "db_vcs"
-require "dotenv/load"
+require "fakefs/spec_helpers"
+require "db_vcs/autoconfigure"
 
 Dir[File.expand_path('support/**/*.rb', __dir__)].each { |f| require(f) }
 
 DbVcs.configure do |c|
   c.dbs_in_use = DbVcs::Manager::ADAPTERS.keys
-  c.pg_config.username = ENV["PGUSER"]
-  c.pg_config.port = ENV["PG_PORT"]
-  c.mongo_config.mongo_uri = "mongodb://localhost:#{ENV["MONGO_PORT"]}"
 end
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
@@ -49,6 +44,8 @@ RSpec.configure do |config|
   config.disable_monkey_patching!
   config.order = :random
   config.seed = Kernel.srand % 0xFFFF
+
+  config.include FakeFS::SpecHelpers, fakefs: true
 
   config.after do
     DbVcs::Manager::ADAPTERS.keys.each do |adapter_name|

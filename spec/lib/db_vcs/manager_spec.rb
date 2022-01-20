@@ -42,6 +42,27 @@ RSpec.describe DbVcs::Manager do
     end
   end
 
+  shared_examples "drops database" do
+    describe "when database exists" do
+      it "drops it" do
+        expect { subject }.to change { instance.adapter.db_exists?(db_name) }.to(false)
+      end
+      it "outputs success" do
+        expect { subject }.to output(a_string_including("Database #{db_name} was dropped successfully")).to_stdout
+      end
+    end
+
+    describe "when database does not exist" do
+      before do
+        instance.adapter.drop_by_dbname(db_name)
+      end
+
+      it "outputs failure" do
+        expect { subject }.to output(a_string_including("#{db_name}' doesn't exist")).to_stdout
+      end
+    end
+  end
+
   describe "constants" do
     describe "ADAPTERS" do
       subject { described_class::ADAPTERS }
@@ -89,20 +110,41 @@ RSpec.describe DbVcs::Manager do
     let(:target_branch) { "some-new-br" }
     let(:source_branch) { "some-source-br" }
 
-    before do
-      DbVcs.config.environments.each do |env|
-        DbHelper.pre_create_all(env, source_branch)
-      end
-    end
-
     DbVcs.config.environments.each do |env|
       DbVcs::Manager::ADAPTERS.keys.each do |adapter_name|
         describe "when using '#{adapter_name}' database" do
+          before do
+            DbHelper.pre_create_all(env, source_branch)
+          end
+
           describe "withing '#{env}' environment" do
             it_behaves_like "copies database" do
               let(:instance) { described_class.new(adapter_name) }
               let(:target_db) { DbVcs::Utils.db_name(env, target_branch) }
               let(:source_db) { DbVcs::Utils.db_name(env, source_branch) }
+            end
+          end
+        end
+      end
+    end
+  end
+
+  describe ".drop_for_all_envs" do
+    subject { described_class.drop_for_all_envs(branch_name) }
+
+    let(:branch_name) { "some-branch" }
+
+    DbVcs.config.environments.each do |env|
+      DbVcs::Manager::ADAPTERS.keys.each do |adapter_name|
+        describe "when using '#{adapter_name}' database" do
+          before do
+            DbHelper.pre_create_all(env, branch_name)
+          end
+
+          describe "withing '#{env}' environment" do
+            it_behaves_like "drops database" do
+              let(:instance) { described_class.new(adapter_name) }
+              let(:db_name) { DbVcs::Utils.db_name(env, branch_name) }
             end
           end
         end
@@ -143,9 +185,7 @@ RSpec.describe DbVcs::Manager do
       DbHelper.pre_create_pg("test", br_name)
     end
 
-    it "deletes database by name" do
-      expect { subject }.to change { instance.adapter.db_exists?(db_name) }.to(false)
-    end
+    it_behaves_like "drops database"
   end
 
   describe "#message" do

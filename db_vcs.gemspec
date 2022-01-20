@@ -36,10 +36,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.10"
   spec.add_development_dependency "rspec-its", "~> 1.3"
   spec.add_development_dependency "fivemat", "~> 1.3"
-  spec.add_development_dependency "dotenv", "~> 2.7"
   spec.add_development_dependency "rake", "~> 13.0"
-  # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "term-ansicolor", "~> 1.7", ">= 1.7.1"
-  # For more information and examples about making a new gem, checkout our
-  # guide at: https://bundler.io/guides/creating_gem.html
+  spec.add_development_dependency "fakefs", "~> 1.4"
 end

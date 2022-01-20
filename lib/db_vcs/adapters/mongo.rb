@@ -4,6 +4,8 @@ module DbVcs
   module Adapters
     class Mongo
       class Config
+        include DbVcs::ConfigAttributes
+
         # Path to mongodump util. It is resolved automatically.
         attr_accessor :mongodump_path
         # Path to mongorestore util. It is resolved automatically.
@@ -52,6 +54,13 @@ module DbVcs
             | #{config.mongorestore_path} #{config.mongo_uri} --archive --quiet --nsFrom='#{from_db}.*' --nsTo='#{to_db}.*'
           SH
           `#{command}`
+        end
+
+        # @param db_name [String]
+        # @return void
+        def create_database(db_name)
+          # Mongodb databases should contain at least one collection
+          connection.use(db_name).database.collection("_db_vcs").insert_one(_db_vcs: 1)
         end
 
         # @return [Array<String>]

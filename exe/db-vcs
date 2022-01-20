@@ -1,0 +1,97 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "db_vcs/autoconfigure"
+require "optparse"
+
+source_branch = DbVcs.config.main_branch
+force = false
+
+opt_parser = OptionParser.new do |parser|
+  parser.banner = <<~TEXT
+    Usage: db-vcs [command] [options]
+
+      Pre-create databases, suitable for usage with db_vcs gem. This will create empty databases:
+        db-vcs init
+      Checks databases existence and warns you if they miss
+        db-vcs check
+      Create databases for current branch, based on main branch:
+        db-vcs create
+      Create databases for current branch, based on a branch, defined by --source-branch option:
+        db-vcs create --source-branch=some_branch
+      Drop databases of current branch. By default you can not drop the databases of main branch (defined by config.main_branch):
+        db-vcs drop
+      Force drop databases of current branch:
+        db-vcs drop --force
+      Drop databases that don't have related branches.
+        db-vcs cleanup
+
+  TEXT
+
+  parser.on(
+    "-bBRANCH_NAME",
+    "--source-branch=BRANCH_NAME",
+    "Set the branch name to create databases from. Default value is a value of config.main_branch config option."
+  ) do |branch_name|
+    source_branch = branch_name
+  end
+
+  parser.on("-f", "--force", "Force the action. The effect depends on a command being executed.") do
+    force = true
+  end
+
+  parser.on("-h", "--help", "Prints this help") do
+    puts parser
+    exit
+  end
+end
+
+args = ARGV.dup
+opt_parser.parse!(args)
+command = args[0]
+
+case command
+when "create"
+  DbVcs::Manager.copy_for_all_envs(target: DbVcs::Utils.current_branch, source: source_branch)
+when "drop"
+  if DbVcs::Utils.current_branch == DbVcs.config.main_branch && !force
+    puts "Databases of main branch(#{DbVcs.config.main_branch}) can't be dropped. Use --force option if you would like to do it."
+  else
+    DbVcs::Manager.drop_for_all_envs(DbVcs::Utils.current_branch)
+  end
+when "cleanup"
+  databases_to_keep = DbVcs::Utils.git_branches.flat_map do |br|
+    DbVcs.config.environments.map do |env|
+      DbVcs::Utils.db_name(env, br)
+    end
+  end
+  DbVcs.config.dbs_in_use.each do |adapter_name|
+    manager = DbVcs::Manager.new(adapter_name)
+    manager.adapter.list_databases.each do |db_name|
+      next if databases_to_keep.include?(db_name)
+      next unless db_name.start_with?(DbVcs::Utils.normalize_db_part(DbVcs.config.db_basename))
+
+      manager.drop(db_name)
+    end
+  end
+when "init"
+  DbVcs.config.dbs_in_use.each do |adapter_name|
+    inst = DbVcs::Manager.new(adapter_name)
+    DbVcs.config.environments.each do |env|
+      inst.create(DbVcs::Utils.db_name(env, DbVcs::Utils.current_branch))
+    end
+  end
+when "check"
+  DbVcs.config.dbs_in_use.each do |adapter_name|
+    inst = DbVcs::Manager.new(adapter_name)
+    DbVcs.config.environments.each do |env|
+      db_name = DbVcs::Utils.db_name(env, DbVcs::Utils.current_branch)
+      unless inst.adapter.db_exists?(db_name)
+        inst.failure("#{db_name} does not exist! Run 'bundle exec db-vcs create' to create it.")
+      end
+    end
+  end
+else
+  puts opt_parser.help
+end
+

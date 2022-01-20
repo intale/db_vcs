@@ -51,6 +51,28 @@ RSpec.describe DbVcs::Adapters::Mongo do
 
       it { expect { subject }.to change { instance.mongo_uri }.to(mongo_uri) }
     end
+
+    describe "#assign_attributes" do
+      subject { instance.assign_attributes(attrs) }
+
+      let(:attrs) do
+        {
+          mongodump_path: "/path/to/mongodump",
+          "mongorestore_path" => "/path/to/mongorestore",
+          not_existing_attr: "some-value"
+        }
+      end
+
+      it "assigns config attribute, represented as symbol" do
+        expect { subject }.to change { instance.mongodump_path }.to(attrs[:mongodump_path])
+      end
+      it "assigns config attribute, represented as string" do
+        expect { subject }.to change { instance.mongorestore_path }.to(attrs["mongorestore_path"])
+      end
+      it "ignores non-existing attribute" do
+        expect { subject }.not_to raise_error
+      end
+    end
   end
 
   describe ".config" do

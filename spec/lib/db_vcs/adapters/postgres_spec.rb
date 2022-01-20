@@ -67,6 +67,22 @@ RSpec.describe DbVcs::Adapters::Postgres do
 
       it { expect { subject }.to change { instance.password }.to(password) }
     end
+
+    describe "#assign_attributes" do
+      subject { instance.assign_attributes(attrs) }
+
+      let(:attrs) { { host: "some.host", "port" => "0", not_existing_attr: "some-value" } }
+
+      it "assigns config attribute, represented as symbol" do
+        expect { subject }.to change { instance.host }.to(attrs[:host])
+      end
+      it "assigns config attribute, represented as string" do
+        expect { subject }.to change { instance.port }.to(attrs["port"])
+      end
+      it "ignores non-existing attribute" do
+        expect { subject }.not_to raise_error
+      end
+    end
   end
 
   describe ".config" do
