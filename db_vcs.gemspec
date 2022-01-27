@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "pg", "~> 1.2"
   spec.add_development_dependency "mongo", "~> 2.17"
+  spec.add_development_dependency "mysql2", "~> 0.5.3"
   spec.add_development_dependency "rspec", "~> 3.10"
   spec.add_development_dependency "rspec-its", "~> 1.3"
   spec.add_development_dependency "fivemat", "~> 1.3"

@@ -18,6 +18,15 @@ services:
     ports:
       - ${MONGO_PORT}:27017
 
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    volumes:
+      - mysql_db:/var/lib/mysql
+    ports:
+      - ${MYSQL_PORT}:3306
 volumes:
   mongo_db:
   pg_db:
+  mysql_db:

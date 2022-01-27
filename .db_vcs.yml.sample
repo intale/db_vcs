@@ -3,6 +3,9 @@ pg_config:
   port: 5532
 mongo_config:
   mongo_uri: "mongodb://localhost:28017"
+mysql_config:
+  username: root
+  port: 3406
 dbs_in_use:
   <% DbVcs::Manager::ADAPTERS.keys.each do |adapter_name| %>
   - <%= adapter_name %>

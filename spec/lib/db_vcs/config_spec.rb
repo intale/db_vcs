@@ -113,6 +113,29 @@ RSpec.describe DbVcs::Config do
     end
   end
 
+  describe "#mysql_config" do
+    subject { instance.mysql_config }
+
+    it { is_expected.to be_a(DbVcs::Adapters::Mysql::Config) }
+  end
+
+  describe "#mysql_config=" do
+    subject { instance.mysql_config = mysql_config }
+
+    let(:mysql_config) { { mysql_path: "/path/to/mysql" } }
+
+    before do
+      instance.mysql_config.mysqldump_path = "/path/to/mysqldump"
+    end
+
+    it "changes mysql config values, provided in hash" do
+      expect { subject }.to change { instance.mysql_config.mysql_path }.to(mysql_config[:mysql_path])
+    end
+    it "does not change mysql config values, not existing in hash" do
+      expect { subject }.not_to change { instance.mysql_config.mysqldump_path }
+    end
+  end
+
   describe "#assign_attributes" do
     subject { instance.assign_attributes(attrs) }
 

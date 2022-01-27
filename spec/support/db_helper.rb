@@ -8,8 +8,7 @@ class DbHelper
     def pre_create_pg(env, branch_name)
       return if DbVcs::Manager.get_adapter_by_name("postgres").db_exists?(DbVcs::Utils.db_name(env, branch_name))
 
-      DbVcs::Manager.get_adapter_by_name("postgres")
-                    .connection.exec("CREATE DATABASE #{DbVcs::Utils.db_name(env, branch_name)}")
+      DbVcs::Manager.get_adapter_by_name("postgres").create_database(DbVcs::Utils.db_name(env, branch_name))
     end
 
     # @param env [String]
@@ -18,9 +17,33 @@ class DbHelper
     def pre_create_mongo(env, branch_name)
       return if DbVcs::Manager.get_adapter_by_name("mongo").db_exists?(DbVcs::Utils.db_name(env, branch_name))
 
-      DbVcs::Manager.get_adapter_by_name("mongo")
-                    .connection.use(DbVcs::Utils.db_name(env, branch_name))
-                    .database.collection("test").insert_one(test: 1)
+      DbVcs::Manager.get_adapter_by_name("mongo").create_database(DbVcs::Utils.db_name(env, branch_name))
+    end
+
+    # @param env [String]
+    # @param branch_name [String]
+    # @return [void]
+    def pre_create_mysql(env, branch_name)
+      return if DbVcs::Manager.get_adapter_by_name("mysql").db_exists?(DbVcs::Utils.db_name(env, branch_name))
+
+      DbVcs::Manager.get_adapter_by_name("mysql").create_database(DbVcs::Utils.db_name(env, branch_name))
+    end
+
+    # @param adapter_name [String]
+    # @param env [String]
+    # @param branch_name [String]
+    # @return [void]
+    def pre_create_by_adapter_name(adapter_name, env, branch_name)
+      case adapter_name
+      when "mongo"
+        pre_create_mongo(env, branch_name)
+      when "postgres"
+        pre_create_pg(env, branch_name)
+      when "mysql"
+        pre_create_mysql(env, branch_name)
+      else
+        raise NotImplementedError, "Don't know how to handle `#{adapter_name}'."
+      end
     end
 
     # @param env [String]
@@ -28,6 +51,7 @@ class DbHelper
     def pre_create_all(env, branch_name)
       pre_create_pg(env, branch_name)
       pre_create_mongo(env, branch_name)
+      pre_create_mysql(env, branch_name)
     end
 
     # @param env [String]

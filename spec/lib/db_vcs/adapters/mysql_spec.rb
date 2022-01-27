@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe DbVcs::Adapters::Postgres do
+RSpec.describe DbVcs::Adapters::Mysql do
   describe "Config" do
     let(:instance) { described_class::Config.new }
 
@@ -8,7 +8,7 @@ RSpec.describe DbVcs::Adapters::Postgres do
       subject { instance.host }
 
       it "has default value" do
-        is_expected.to eq("localhost")
+        is_expected.to eq("127.0.0.1")
       end
     end
 
@@ -24,14 +24,14 @@ RSpec.describe DbVcs::Adapters::Postgres do
       subject { instance.port }
 
       it "has default value" do
-        is_expected.to eq("5432")
+        is_expected.to eq("3306")
       end
     end
 
-    describe "#port=" do
+    describe "#host=" do
       subject { instance.port = port }
 
-      let(:port) { "5433" }
+      let(:port) { "3307" }
 
       it { expect { subject }.to change { instance.port }.to(port) }
     end
@@ -40,14 +40,14 @@ RSpec.describe DbVcs::Adapters::Postgres do
       subject { instance.username }
 
       it "has default value" do
-        is_expected.to eq("postgres")
+        is_expected.to eq("root")
       end
     end
 
     describe "#username=" do
       subject { instance.username = username }
 
-      let(:username) { "some-user" }
+      let(:username) { "mysql" }
 
       it { expect { subject }.to change { instance.username }.to(username) }
     end
@@ -68,33 +68,49 @@ RSpec.describe DbVcs::Adapters::Postgres do
       it { expect { subject }.to change { instance.password }.to(password) }
     end
 
-    describe "#assign_attributes" do
-      subject { instance.assign_attributes(attrs) }
+    describe "#mysqldump_path" do
+      subject { instance.mysqldump_path }
 
-      let(:attrs) { { host: "some.host", "port" => "0", not_existing_attr: "some-value" } }
+      it "has default value" do
+        is_expected.to eq(DbVcs::Utils.resolve_exec_path("mysqldump"))
+      end
+    end
 
-      it "assigns config attribute, represented as symbol" do
-        expect { subject }.to change { instance.host }.to(attrs[:host])
+    describe "#mysqldump_path=" do
+      subject { instance.mysqldump_path = mysqldump_path }
+
+      let(:mysqldump_path) { "/path/to/mysqldump" }
+
+      it { expect { subject }.to change { instance.mysqldump_path }.to(mysqldump_path) }
+    end
+
+    describe "#mysql_path" do
+      subject { instance.mysql_path }
+
+      it "has default value" do
+        is_expected.to eq(DbVcs::Utils.resolve_exec_path("mysql"))
       end
-      it "assigns config attribute, represented as string" do
-        expect { subject }.to change { instance.port }.to(attrs["port"])
-      end
-      it "ignores non-existing attribute" do
-        expect { subject }.not_to raise_error
-      end
+    end
+
+    describe "#mysql_path=" do
+      subject { instance.mysql_path = mysql_path }
+
+      let(:mysql_path) { "/path/to/mysql" }
+
+      it { expect { subject }.to change { instance.mysql_path }.to(mysql_path) }
     end
   end
 
   describe ".config" do
     subject { described_class.config }
 
-    it { is_expected.to eq(DbVcs.config.pg_config) }
+    it { is_expected.to eq(DbVcs.config.mysql_config) }
   end
 
   describe ".connection" do
     subject { described_class.connection }
 
-    it { is_expected.to be_a(PG::Connection) }
+    it { is_expected.to be_a(Mysql2::Client) }
   end
 
   describe ".db_exists?" do
@@ -105,7 +121,7 @@ RSpec.describe DbVcs::Adapters::Postgres do
 
     describe "when db exists" do
       before do
-        DbHelper.pre_create_pg("test", branch_name)
+        DbHelper.pre_create_mysql("test", branch_name)
       end
 
       it { is_expected.to be_truthy }
@@ -125,7 +141,7 @@ RSpec.describe DbVcs::Adapters::Postgres do
     let(:source_branch) { "some-existing-branch" }
 
     before do
-      DbHelper.pre_create_pg("test", source_branch)
+      DbHelper.pre_create_mysql("test", source_branch)
     end
 
     it "creates new db" do
@@ -140,10 +156,10 @@ RSpec.describe DbVcs::Adapters::Postgres do
     let(:branch_name) { "some-branch" }
 
     before do
-      DbHelper.pre_create_pg("test", branch_name)
+      DbHelper.pre_create_mysql("test", branch_name)
     end
 
-    it "returns array of existing pg databases" do
+    it "returns array of existing mysql databases" do
       is_expected.to include(existing_db_name)
     end
     it { is_expected.to be_an(Array) }
@@ -166,7 +182,7 @@ RSpec.describe DbVcs::Adapters::Postgres do
     let(:branch_name) { "some-existing-db" }
 
     before do
-      DbHelper.pre_create_pg("test", branch_name)
+      DbHelper.pre_create_mysql("test", branch_name)
     end
 
     it "deletes db by name" do

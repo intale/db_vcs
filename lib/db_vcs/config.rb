@@ -12,7 +12,7 @@ module DbVcs
     # available values. Defaults to empty array.
     attr_accessor :dbs_in_use
     # Configuration of dbs clients.
-    attr_reader :pg_config, :mongo_config
+    attr_reader :pg_config, :mongo_config, :mysql_config
     # A name of branch to be used as a default branch to copy databases from.
     attr_accessor :main_branch
 
@@ -23,6 +23,7 @@ module DbVcs
       @main_branch = "main"
       @pg_config = DbVcs::Adapters::Postgres::Config.new
       @mongo_config = DbVcs::Adapters::Mongo::Config.new
+      @mysql_config = DbVcs::Adapters::Mysql::Config.new
     end
 
     # @param hash [Hash]
@@ -35,6 +36,12 @@ module DbVcs
     # @return [void]
     def mongo_config=(hash)
       mongo_config.assign_attributes(hash)
+    end
+
+    # @param hash [Hash]
+    # @return [void]
+    def mysql_config=(hash)
+      mysql_config.assign_attributes(hash)
     end
   end
 end

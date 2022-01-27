@@ -2,7 +2,11 @@
 
 module DbVcs
   class Manager
-    ADAPTERS = { "postgres" => DbVcs::Adapters::Postgres, "mongo" => DbVcs::Adapters::Mongo }.freeze
+    ADAPTERS = {
+      "postgres" => DbVcs::Adapters::Postgres,
+      "mongo" => DbVcs::Adapters::Mongo,
+      "mysql" => DbVcs::Adapters::Mysql
+    }.freeze
 
     class << self
       # @param adapter_name [String]

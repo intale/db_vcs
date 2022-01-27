@@ -70,7 +70,9 @@ RSpec.describe DbVcs::Manager do
       it do
         is_expected.to(
           eq(
-            "postgres" => DbVcs::Adapters::Postgres, "mongo" => DbVcs::Adapters::Mongo
+            "postgres" => DbVcs::Adapters::Postgres,
+            "mongo" => DbVcs::Adapters::Mongo,
+            "mysql" => DbVcs::Adapters::Mysql
           )
         )
       end
@@ -114,7 +116,7 @@ RSpec.describe DbVcs::Manager do
       DbVcs::Manager::ADAPTERS.keys.each do |adapter_name|
         describe "when using '#{adapter_name}' database" do
           before do
-            DbHelper.pre_create_all(env, source_branch)
+            DbHelper.pre_create_by_adapter_name(adapter_name, env, source_branch)
           end
 
           describe "withing '#{env}' environment" do
@@ -138,7 +140,7 @@ RSpec.describe DbVcs::Manager do
       DbVcs::Manager::ADAPTERS.keys.each do |adapter_name|
         describe "when using '#{adapter_name}' database" do
           before do
-            DbHelper.pre_create_all(env, branch_name)
+            DbHelper.pre_create_by_adapter_name(adapter_name, env, branch_name)
           end
 
           describe "withing '#{env}' environment" do
@@ -186,6 +188,32 @@ RSpec.describe DbVcs::Manager do
     end
 
     it_behaves_like "drops database"
+  end
+
+  describe "#create" do
+    subject { instance.create(db_name) }
+
+    let(:db_name) { DbVcs::Utils.db_name("test", branch_name) }
+    let(:branch_name) { "some-branch-name" }
+
+    describe "when db already exists" do
+      before do
+        DbHelper.pre_create_pg("test", branch_name)
+      end
+
+      it "outputs failure" do
+        expect { subject }.to output(a_string_including("#{db_name}' already exist")).to_stdout
+      end
+    end
+
+    describe "when db does not exist" do
+      it "creates it" do
+        expect { subject }.to change { instance.adapter.db_exists?(db_name) }.to(true)
+      end
+      it "outputs success" do
+        expect { subject }.to output(a_string_including("Database #{db_name} created successfully")).to_stdout
+      end
+    end
   end
 
   describe "#message" do

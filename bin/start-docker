@@ -7,9 +7,16 @@ require "db_vcs/autoconfigure"
 pg_user = DbVcs.config.pg_config.username
 pg_port = DbVcs.config.pg_config.port
 mongo_port = URI.parse(DbVcs.config.mongo_config.mongo_uri).port
+mysql_port = DbVcs.config.mysql_config.port
 
 pid = Kernel.spawn(
-  { "PGUSER" => pg_user.to_s, "PG_PORT" => pg_port.to_s, "MONGO_PORT" => mongo_port.to_s }, "docker-compose up 1>&2",
+  {
+    "PGUSER" => pg_user.to_s,
+    "PG_PORT" => pg_port.to_s,
+    "MONGO_PORT" => mongo_port.to_s,
+    "MYSQL_PORT" => mysql_port.to_s
+  },
+  "docker-compose up 1>&2",
   close_others: true
 )
 Process.waitpid(pid)

@@ -50,13 +50,22 @@ mongo_config: # Configuration of Mongodb
   mongodump_path: "/path/to/mongodump" # resolved automatically using which util. Override it otherwise
   mongorestore_path: "/path/to/mongorestore" # resolved automatically using which util. Override it otherwise
   mongo_uri: mongodb://localhost:27017
+mysql_config: # Configuration of MySQL
+  host: 127.0.0.1
+  port: '3306'
+  username: root
+  password: root
+  mysqldump_path: "/path/to/mysqldump" # resolved automatically using which util. Override it otherwise
+  mysql_path: "/path/to/mysql" # resolved automatically using which util. Override it otherwise
 ```
 
 Notices:
 
 - to be able to use MongoDB - you need to have "mongo" gem installed
-- to be able to use MongoDB - you need to have [MongoDB Database Tools](https://docs.mongodb.com/database-tools/) installed
+- to be able to use MongoDB - you need to have [MongoDB Database Tools](https://docs.mongodb.com/database-tools/) installed. You can have it as docker container - just make sure to adjust "mongodump_path" and "mongorestore_path" options in configuration file
 - to be able to use PostgreSQL - you need to have "pg" gem installed 
+- to be able to use MySQL - you need to have "mysql2" gem installed 
+- to be able to use MySQL - you need to have `mysql` and `mysqldump` utils installed. You can have it as docker container - just make sure to adjust "mysqldump_path" and "mysql_path" options in configuration file
 
 ## Usage
 
@@ -137,7 +146,7 @@ Example of file's content:
 # Comparison with third argument is needed to detect whether the checkout is related to the switching between branches. In this case third argument equals to 1.
 if [ $3 -eq 1 ]
   then
-    bundle exec db-vcs check
+    bundle exec db-vcs check # or "bundle exec db-vcs create" if you want to create databases automatically on checkout
     bundle exec pumactl -C config/puma.rb restart
 fi
 ```

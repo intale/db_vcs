@@ -127,7 +127,7 @@ RSpec.describe DbVcs::Adapters::Mongo do
     subject { described_class.list_databases }
 
     let(:existing_db_name) { DbVcs::Utils.db_name("test", branch_name) }
-    let(:branch_name) { "some-existing-db" }
+    let(:branch_name) { "some-branch" }
 
     before do
       DbHelper.pre_create_mongo("test", branch_name)
@@ -137,6 +137,16 @@ RSpec.describe DbVcs::Adapters::Mongo do
       is_expected.to include(existing_db_name)
     end
     it { is_expected.to be_an(Array) }
+  end
+
+  describe ".create_database" do
+    subject { described_class.create_database(db_name) }
+
+    let(:db_name) { DbVcs::Utils.db_name("test", "some-branch-name") }
+
+    it "creates new database" do
+      expect { subject }.to change { described_class.db_exists?(db_name) }.to(true)
+    end
   end
 
   describe ".drop_by_dbname" do
