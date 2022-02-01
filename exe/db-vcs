@@ -95,9 +95,9 @@ when "check"
   end
 when "names"
   names =
-  DbVcs.config.environments.map do |env|
-    { database: DbVcs::Utils.db_name(env, DbVcs::Utils.current_branch), environment: env }
-  end
+    DbVcs.config.environments.map do |env|
+      { database: DbVcs::Utils.db_name(env, DbVcs::Utils.current_branch), environment: env }
+    end
   puts names.to_json
 else
   puts opt_parser.help
