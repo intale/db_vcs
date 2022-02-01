@@ -25,6 +25,8 @@ opt_parser = OptionParser.new do |parser|
         db-vcs drop --force
       Drop databases that don't have related branches.
         db-vcs cleanup
+      Get database names of current branch in JSON format.
+        db-vcs names
 
   TEXT
 
@@ -91,6 +93,12 @@ when "check"
       end
     end
   end
+when "names"
+  names =
+  DbVcs.config.environments.map do |env|
+    { database: DbVcs::Utils.db_name(env, DbVcs::Utils.current_branch), environment: env }
+  end
+  puts names.to_json
 else
   puts opt_parser.help
 end
