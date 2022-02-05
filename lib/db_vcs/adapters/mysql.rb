@@ -64,7 +64,7 @@ module DbVcs
           connection.query(<<~SQL)
             CREATE DATABASE #{to_db} CHARACTER SET #{create_opts["charset"]} COLLATE #{create_opts["collation"]}
           SQL
-          password_opt = config.password.to_s.strip.empty? ? "" : "-p #{config.password}"
+          password_opt = config.password.to_s.strip.empty? ? "" : "-p#{config.password}"
           command =
             <<~SH
             #{config.mysqldump_path} -u #{config.username} #{password_opt} -h #{config.host} -P #{config.port} #{from_db} \

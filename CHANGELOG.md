@@ -2,6 +2,10 @@
 
   Nothing new yet
 
+## [1.1.2] - 2022-02-05
+
+- Fix mysql CLI options
+
 ## [1.1.1] - 2022-02-01
 
 - Add "db-vcs name" command
